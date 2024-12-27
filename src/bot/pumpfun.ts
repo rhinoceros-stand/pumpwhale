@@ -1,4 +1,5 @@
 import { Connection, PublicKey } from '@solana/web3.js'
+import chalk from 'chalk'
 import { decodeTransferTransaction } from '../metadata'
 import telegram from './telegram'
 
@@ -55,12 +56,16 @@ const run = () => {
 
     const event = logs[7]
     if (event.indexOf('initialize2') > -1) {
-      console.log('Pump.fun Liquidity merge Event', signature, context.slot)
       decodeTransferTransaction(connection, signature).then((token) => {
         telegram.sendMessage(token)
       })
+      console.log(`
+        Time: ${chalk.blue(Date.now())} Pump.fun Liquidity Merged ${chalk.yellow(signature)}
+      `)
     } else {
-      console.log('Not initialize2 tx', signature)
+      console.log(`
+        Time: ${chalk.blue(Date.now())} Not initialize2 tx ${chalk.cyan(signature)}
+      `)
     }
   })
 }
