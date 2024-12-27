@@ -16,8 +16,8 @@ const sendMessage = (token) => {
   bot.api.sendMessage({
     chat_id: -4604354193,
     text:
-      format`Name: ${bold(token.name)}
-        Symbol: $${bold(token.symbol)}
+      format`
+        ${bold(token.name)}($${bold(token.symbol)})
         Address: ${bold(token.address)}
         Links: ${link(
         'Pump.fun',
