@@ -59,9 +59,9 @@ const run = () => {
       decodeTransferTransaction(connection, signature).then((token) => {
         telegram.sendMessage(token)
       })
-      console.log(`Time: ${chalk.blue(Date.now())} Pump.fun Liquidity Merged ${chalk.yellow(signature)}`)
+      console.log(`${chalk.blue(Date.now())} Pump.fun Liquidity Merged ${chalk.yellow(signature)}`)
     } else {
-      console.log(`Time: ${chalk.blue(Date.now())} Not initialize2 tx ${chalk.cyan(signature)}`)
+      console.log(`${chalk.blue(Date.now())} Not initialize2 ${chalk.cyan(signature)}`)
     }
   })
 }
