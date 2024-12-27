@@ -1,4 +1,3 @@
-import bot from './bot'
 import { decodeTransferTransaction } from '../metadata'
 import { Connection } from '@solana/web3.js'
 
@@ -16,7 +15,7 @@ const init = () => {
 
 (async () => {
   init()
-  const TX = '5KTBAriyUD2cnDzTpBua9PRD7tVRVYTmcWhu8M57QjqAQ2ELxS5BL13fcpjdy1tNtXyz2vo2RDSD9s9xGqgAPQue'
+  const TX = '5g2hu7wJu4qqzCbKtrhzwXXKLKtCcCQZ7wXbNZg8eSk8EsHDtChnCsjG4M7nS8216uUpkQ9PfqwoqW4WXQWaAwvF'
   const token = await decodeTransferTransaction(connection, TX)
 
   console.log(token)

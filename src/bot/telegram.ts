@@ -1,6 +1,5 @@
 import { Bot } from 'gramio'
-import { format, bold, italic, spoiler, link } from '@gramio/format'
-import { MessageType, publishMessageToChannel, subscribeToChannel } from '../message'
+import { format, bold, link } from '@gramio/format'
 
 let bot: Bot
 
@@ -10,7 +9,7 @@ const run = () => {
     .onStart(console.log)
   bot.start()
 
-  console.log(`bot running...`)
+  console.log(`Telegram bot running...`)
 }
 
 const sendMessage = (token) => {
@@ -26,8 +25,7 @@ const sendMessage = (token) => {
       )} | ${link(
         'GMGN.ai',
         `https://gmgn.ai/sol/token/${token.address}`
-      )}
-        `
+      )}`
   })
 }
 

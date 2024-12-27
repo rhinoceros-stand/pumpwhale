@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun ./src/index.ts",
-    "bot": "bun --watch ./src/bot/index.ts",
+    "bot": "bun ./src/bot/index.ts",
     "telegram": "bun ./src/telegram/startup.ts",
     "webservice": "bun --watch ./src/webservice/main.ts"
   },
