@@ -1,7 +1,6 @@
-import { clusterApiUrl, Connection, PublicKey } from '@solana/web3.js'
-import { addToList } from '../storage'
+import { Connection, PublicKey } from '@solana/web3.js'
 import { decodeTransferTransaction } from '../metadata'
-import { MessageType } from '../message'
+import telegram from '../telegram/bot'
 
 const PUMP_FUN_ADDRESS = new PublicKey('TSLvdd1pWpHVjahSpsvCXUbgwsL3JAcvokwaKt1eokM')
 const PUMP_FUN_LIQUIDITY_ADDRESS = new PublicKey('39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg')
@@ -10,11 +9,13 @@ let connection: Connection
 
 const init = () => {
   try {
-    connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed')
+    connection = new Connection(process.env.SOLANA_RPC_URL, 'confirmed')
     console.info('Solana RPC Connection Success, Monitoring Pumpfun Mint Address!')
   } catch (err) {
     console.error('Solana RPC Connection Error', err)
   }
+
+  telegram.run()
 }
 
 const run = () => {
@@ -33,11 +34,10 @@ const run = () => {
     const event = logs[5]
 
     if (event.indexOf('Create') > -1) {
-      addToList(MessageType.NEW_POOL_CREATED, signature)
-      console.log('Fecthcing Token Create Event', signature, context.slot)
+      // addToList(MessageType.NEW_POOL_CREATED, signature)
+      // console.log('Fecthcing Token Create Event', signature, context.slot)
     }
   })
-
 
   connection.onLogs(PUMP_FUN_LIQUIDITY_ADDRESS, (accountInfo, context) => {
     const {
@@ -45,33 +45,22 @@ const run = () => {
       logs
     } = accountInfo
 
-    // decodeTranscation(connection, signature).then((token)=>{
-    //   addToList(NAME_SPACE, JSON.stringify(token))
-    //   publishMessageToChannel(MessageType.TRADING, JSON.stringify(token))
-    // })
-
-    // Save logs to file named after signature
-    const fs = require('fs');
-    const path = require('path');
-    
-    try {
-      const logData = {
-        signature,
-        logs,
-        slot: context.slot,
-        timestamp: new Date().toISOString()
-      };
-      
-      fs.writeFileSync(
-        path.join(__dirname, '..', '..', 'logs', `${signature}.json`),
-        JSON.stringify(logData, null, 2)
-      );
-    } catch (err) {
-      console.error('Error saving log file:', err);
+    if (!Array.isArray(logs)) {
+      return
     }
+
+    if (logs.length < 10) {
+      return
+    }
+
     const event = logs[7]
     if (event.indexOf('initialize2') > -1) {
-      console.log('Pumpfun Liquidity Fill Event', signature, context.slot)
+      console.log('Pump.fun Liquidity merge Event', signature, context.slot)
+      decodeTransferTransaction(connection, signature).then((token) => {
+        telegram.sendMessage(token)
+      })
+    } else {
+      console.log('Not initialize2 tx', signature)
     }
   })
 }

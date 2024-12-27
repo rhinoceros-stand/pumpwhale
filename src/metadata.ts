@@ -1,7 +1,9 @@
 import { Metaplex } from '@metaplex-foundation/js'
 import { getMint } from '@solana/spl-token'
 import { Connection, PublicKey } from '@solana/web3.js'
-import { get, pick } from 'lodash'
+import { findLast, get, pick } from 'lodash'
+
+const RAYDIUM_V4 = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
 
 /**
  * 解析 Mint 交易
@@ -43,14 +45,7 @@ export const decodeMintTransaction = async (connection: Connection, signature: s
         return
       }
 
-      const tokenInfo = await getTokenInfo(connection, mintAddress)
-
-      const token = {
-        ...tokenInfo,
-        address: mintAddress
-      }
-
-      return token
+      return await getTokenInfo(connection, mintAddress)
     }
   } catch (err) {
     console.error('Error fetching transaction:', err)
@@ -70,25 +65,28 @@ export const decodeTransferTransaction = async (connection: Connection, signatur
       maxSupportedTransactionVersion: 0
     })
 
-    const fs = require('fs').promises
-
-    // Write transaction data to JSON file
-    try {
-      await fs.writeFile(
-        `signature.json`,
-        JSON.stringify(tx, null, 2),
-        'utf8'
-      )
-      console.log(`Transaction ${signature} written to file`)
-    } catch (writeErr) {
-      console.error('Error writing transaction to file:', writeErr)
-    }
-
     if (!tx) {
       return null
     }
-  } catch (err) {
-    console.error('Error fetching transaction:', err)
+
+    let mintAddress = ''
+
+    const tokenBalances = tx.meta?.postTokenBalances
+    if (Array.isArray(tokenBalances)) {
+      const selectedRecord = findLast(tokenBalances, record => {
+        return record.owner === RAYDIUM_V4 && record.mint !== 'So11111111111111111111111111111111111111112'
+      })
+
+      if (!selectedRecord) {
+        return
+      }
+
+      mintAddress = selectedRecord.mint
+
+      return await getTokenInfo(connection, mintAddress)
+    }
+  } catch (e) {
+    console.log('Error decoding transfer transaction:', e)
   }
 }
 
@@ -116,7 +114,7 @@ export const getTokenInfo = async (connection: Connection, address: string) => {
       supply: mintInfo.supply.toString(),
       name: token.name,
       symbol: token.symbol,
-      logo: token.json?.image
+      address
     }
   } else {
     return {}
