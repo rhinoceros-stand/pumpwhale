@@ -1,20 +1,24 @@
 import { Bot } from 'gramio'
+import chalk from 'chalk'
 import { format, bold, link } from '@gramio/format'
 
 let bot: Bot
 
+const CHANNEL_NAME = '@pumpfun_bonding_alert'
+
 const run = () => {
   bot = new Bot(process.env.TELEGRAM_BOT_SECRET) // put you token here
     .command('start', (context) => context.send('Hi!'))
-    .onStart(console.log)
-  bot.start()
+    .onStart((params) => {
+      console.log(`Telegram bot[${chalk.blue(params.info.first_name)}] running...`)
+    })
 
-  console.log(`Telegram bot running...`)
+  bot.start()
 }
 
-const sendMessage = (token) => {
+const sendMessage = (token: any) => {
   bot.api.sendMessage({
-    chat_id: -4604354193,
+    chat_id: CHANNEL_NAME,
     text:
       format`
         ${bold(token.name)}($${bold(token.symbol)})
