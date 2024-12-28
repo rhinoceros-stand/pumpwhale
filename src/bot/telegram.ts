@@ -22,13 +22,16 @@ const sendMessage = (token: any) => {
     text:
       format`
         ${bold(token.name)}($${bold(token.symbol)})
-        Address: ${bold(token.address)}
+        ${bold(token.address)}
         Links: ${link(
         'Pump.fun',
         `https://pump.fun/coin/${token.address}`
       )} | ${link(
         'GMGN.ai',
         `https://gmgn.ai/sol/token/${token.address}`
+      )} | ${link(
+        'SOLSCAN',
+        `https://solscan.io/token/${token.address}`
       )}`
   })
 }
