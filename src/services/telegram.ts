@@ -1,12 +1,6 @@
 import { Bot } from 'gramio'
 import chalk from 'chalk'
 
-export type TokenMeta = {
-  name: string
-  symbol: string
-  address: string
-}
-
 export default class Telegram {
   bot: Bot
 

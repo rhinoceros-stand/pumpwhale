@@ -1,7 +1,12 @@
 import { Connection, Logs, PublicKey } from '@solana/web3.js'
 import chalk from 'chalk'
 import { decodeTransferTransaction } from '../metadata'
-import { TokenMeta } from './telegram'
+
+export type TokenMeta = {
+  name: string
+  symbol: string
+  address: string
+}
 
 export default class PumpFun {
   /**
