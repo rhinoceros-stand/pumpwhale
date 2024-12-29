@@ -72,8 +72,7 @@ export default class PumpFun {
       return
     }
 
-    const event = logs[7]
-    if (event.indexOf('initialize2') > -1) {
+    if (logs && logs.some(log => log.includes('initialize2'))) {
       const tokenInfo = await decodeTransferTransaction(this._connection, signature)
       if (tokenInfo) {
         console.log(`${chalk.blue(Date.now())} Pump.fun Liquidity Merged ${chalk.yellow(signature)}`)
