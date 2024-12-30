@@ -20,6 +20,7 @@ export const getWalletProfit = async (walletAddress: string) => {
     return holdings.map(v => {
       const profit = Number(v.realized_profit)
       return {
+        balance: Number(v.balance),
         symbol: v.token.symbol,
         tokenAddress: v.token.token_address,
         profit
