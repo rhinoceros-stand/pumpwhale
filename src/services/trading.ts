@@ -6,13 +6,14 @@ import { WebsocketAPI } from '@binance/connector-typescript'
 import { Wallet } from '@project-serum/anchor'
 import { getTokenInfo } from '../metadata'
 
-const SOL_MINT_ADDRESS = 'So11111111111111111111111111111111111111112'
+const PRICE_TICKER_PAIR = 'SOLUSDT'
 
 /**
  * Everytime trade 0.005 SOL
  */
-const SOL_ORDER_AMOUNT = 0.005 * LAMPORTS_PER_SOL
-const PRICE_TICKER_PAIR = 'SOLUSDT'
+const SOL_ORDER_AMOUNT = 0.0005 * LAMPORTS_PER_SOL
+const SOL_MINT_ADDRESS = 'So11111111111111111111111111111111111111112'
+
 const SLIPPAGE_MAX_BPS = 1000
 
 export default class Trading {
@@ -168,9 +169,18 @@ export default class Trading {
     const tx = await this.preparingSwap(quoteResponse)
 
     // 根据 transaction 查询交换的代币数量，输出单价
-    const transactionInfo = await this._connection.getParsedTransaction(tx)
+    const transactionInfo = await this._connection.getParsedTransaction(tx, {
+      maxSupportedTransactionVersion: 0
+    })
 
-    console.log('tx', transactionInfo)
+    const { meta } = transactionInfo
+    const filterBalance = meta.postTokenBalances.findLast(v => v.owner === this._wallet.publicKey.toBase58())
+    if (filterBalance) {
+      const tokenAmount = filterBalance.uiTokenAmount.uiAmount
+      const price = SOL_ORDER_AMOUNT / LAMPORTS_PER_SOL * this._solPrice / filterBalance.uiTokenAmount.uiAmount
+      const solAmount = SOL_ORDER_AMOUNT / LAMPORTS_PER_SOL
+      console.log(`${tokenAmount} ${`$${chalk.blue(tokenInfo.name)}`} swap with ${solAmount} SOL, Price ${chalk.green(Number(price).toFixed(4))}`)
+    }
   }
 
   /**

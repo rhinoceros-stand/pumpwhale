@@ -19,10 +19,12 @@
   },
   "packageManager": "pnpm@10.0.0-rc.0+sha512.bce495587126f9a37d64150bf80dcf9bd96f0d64cfd450c9b1a7e5bf2cfc81aef3d50178f259855351c872905a240861a55031652c81e8a11665bfa65f6a1dc2",
   "dependencies": {
+    "@binance/connector-typescript": "^0.3.14",
     "@gramio/format": "^0.1.5",
     "@koa/bodyparser": "^5.1.1",
     "@koa/cors": "^5.0.0",
     "@koa/router": "^13.1.0",
+    "@mercurial-finance/optimist": "^0.4.0",
     "@metaplex-foundation/js": "^0.20.1",
     "@project-serum/anchor": "^0.26.0",
     "@solana/spl-token": "^0.4.9",
