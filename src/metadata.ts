@@ -110,8 +110,9 @@ export const getTokenInfo = async (connection: Connection, address: string) => {
 
   if (metadataAccountInfo) {
     const token = await metaplex.nfts().findByMint({ mintAddress: mintAddress })
+
     return {
-      supply: mintInfo.supply.toString(),
+      supply: mintInfo.supply,
       name: token.name,
       symbol: token.symbol,
       address
