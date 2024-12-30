@@ -13,6 +13,7 @@ const SOL_MINT_ADDRESS = 'So11111111111111111111111111111111111111112'
  */
 const SOL_ORDER_AMOUNT = 0.005 * LAMPORTS_PER_SOL
 const PRICE_TICKER_PAIR = 'SOLUSDT'
+const SLIPPAGE_MAX_BPS = 1000
 
 export default class Trading {
   private readonly _connection: Connection
@@ -69,7 +70,11 @@ export default class Trading {
           // user public key to be used for the swap
           userPublicKey: this._wallet.publicKey.toString(),
           // auto wrap and unwrap SOL. default is true
-          wrapAndUnwrapSol: true
+          wrapAndUnwrapSol: true,
+          // jup.ag frontend default max for user
+          dynamicSlippage: {
+            'maxBps': SLIPPAGE_MAX_BPS
+          }
           // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
           // feeAccount: "fee_account_public_key"
         })
@@ -143,7 +148,7 @@ export default class Trading {
     // 查询代币报价
     // 使用 0.005 SOL 互换，交易滑点 10%
     const quoteResponse = await (
-      await fetch(`https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT_ADDRESS}&outputMint=${address}&amount=${SOL_ORDER_AMOUNT}&slippageBps=1000`
+      await fetch(`https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT_ADDRESS}&outputMint=${address}&amount=${SOL_ORDER_AMOUNT}&slippageBps=${SLIPPAGE_MAX_BPS}`
       )
     ).json()
 
@@ -161,6 +166,11 @@ export default class Trading {
 
     // 准备交易
     const tx = await this.preparingSwap(quoteResponse)
+
+    // 根据 transaction 查询交换的代币数量，输出单价
+    const transactionInfo = await this._connection.getParsedTransaction(tx)
+
+    console.log('tx', transactionInfo)
   }
 
   /**
