@@ -2,6 +2,7 @@ import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, VersionedTransaction 
 import bs58 from 'bs58'
 import chalk from 'chalk'
 import fetch from 'cross-fetch'
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { WebsocketAPI } from '@binance/connector-typescript'
 import { Wallet } from '@project-serum/anchor'
 import { getTokenInfo } from '../metadata'
@@ -133,8 +134,12 @@ export default class Trading {
     // 查询 TOP 20 持有量
     const topHolders = await this._connection.getTokenLargestAccounts(mintAddress)
 
+    // 查询持有人数量
+    const holders = await this.getHolders(mintAddress)
+
     const tokenInfo = {
       ...tokenMetadata,
+      holders,
       amount: supply.value.uiAmount,
       topHolders: topHolders.value.map(v => {
         return {
@@ -143,6 +148,10 @@ export default class Trading {
           percent: (v.uiAmount / supply.value.uiAmount) * 100
         }
       })
+    }
+
+    if (holders < 300) {
+      console.log(`${chalk.blue(tokenInfo.name)}(${chalk.red(tokenInfo.address)}) holders ${holders} is below 300, won't swap it.`)
     }
 
     // Swapping SOL to Mint Address with input 0.005 SOL and 10% slippage
@@ -199,10 +208,29 @@ export default class Trading {
 
   /**
    * 获取持有者信息
-   * @param address
+   * @param mintAddress
    */
-  async getHolders(address: string) {
-    return
+  async getHolders(mintAddress: PublicKey) {
+    const accounts = await this._connection.getParsedProgramAccounts(TOKEN_PROGRAM_ID, {
+      commitment: 'confirmed',
+      filters: [
+        {
+          dataSize: 165 // Number of bytes for a token account
+        },
+        {
+          memcmp: {
+            offset: 0, // Offset to start reading the token mint address
+            bytes: mintAddress.toBase58() // The token mint address
+          }
+        }
+      ]
+    })
+
+    const holders = accounts
+      .filter((account) => account.account.data.parsed.info.tokenAmount.uiAmount > 0)
+      .map((account) => account.pubkey.toBase58())
+
+    return holders.length
   }
 
   /**
