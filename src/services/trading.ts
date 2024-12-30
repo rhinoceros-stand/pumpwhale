@@ -26,12 +26,12 @@ export default class Trading {
         console.debug(chalk.blue('Connected to Binance WebSocket server'))
         client.avgPrice('SOLUSDT')
       },
-      close: () => chalk.red('Disconnected from WebSocket server'),
+      close: () => console.log(chalk.red('Disconnected from WebSocket server')),
       message: (data: string) => {
         const parseData = JSON.parse(data)
         this._solPrice = parseInt(parseData.result.price, 10)
 
-        console.info(`SOLUSDT now: ${chalk.magenta(this._solPrice)}USDT`)
+        console.info(`SOLUSDT now: ${chalk.magenta(`${this._solPrice}USDT`)}`)
       }
     }
 
@@ -40,6 +40,9 @@ export default class Trading {
     this._wsClient = new WebsocketAPI('', '', { callbacks })
   }
 
+  /**
+   * 获取 SOL 报价
+   */
   async getSOLPrice() {
     if (!this._wsClient) {
       return
