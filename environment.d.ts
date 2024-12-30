@@ -1,6 +1,7 @@
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
+      GMGN_COOKIES: string
       REDIS_URL: string
       SOLANA_RPC_URL: string
       TELEGRAM_BOT_SECRET: string
