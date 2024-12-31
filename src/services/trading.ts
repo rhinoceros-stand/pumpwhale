@@ -3,11 +3,8 @@ import bs58 from 'bs58'
 import chalk from 'chalk'
 import fetch from 'cross-fetch'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import { WebsocketAPI } from '@binance/connector-typescript'
 import { Wallet } from '@project-serum/anchor'
 import { getTokenInfo } from '../metadata'
-
-const PRICE_TICKER_PAIR = 'SOLUSDT'
 
 /**
  * Everytime trade 0.005 SOL
@@ -19,27 +16,11 @@ const SLIPPAGE_MAX_BPS = 1000
 
 export default class Trading {
   private _connection: Connection
-  private readonly _wsClient: WebsocketAPI
   private _wallet: Wallet
   private _solPrice: number
 
   constructor() {
-    const callbacks = {
-      open: (client: WebsocketAPI) => {
-        console.debug(chalk.blue('Connected to Binance WebSocket server'))
-        client.avgPrice(PRICE_TICKER_PAIR)
-      },
-      close: () => console.log(chalk.red('Disconnected from WebSocket server')),
-      message: (data: string) => {
-        const parseData = JSON.parse(data)
-        this._solPrice = parseInt(parseData.result.price, 10)
-
-        console.info(`SOLUSDT now: ${chalk.magenta(`${this._solPrice}USDT`)}`)
-      }
-    }
-
     this._wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.WALLET_PRIVATE_KEY || '')))
-    this._wsClient = new WebsocketAPI('', '', { callbacks })
   }
 
   /**

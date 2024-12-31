@@ -3,11 +3,13 @@ import { Connection, Logs, PublicKey } from '@solana/web3.js'
 import { decodeTransferTransaction } from '../../metadata'
 import { logger } from '../../utils/logger'
 
+export type onBindingCallback = (data: any) => void
+
 const PUMP_FUN_LIQUIDITY_BONDING_ADDRESS = new PublicKey('39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg')
 
 export default class Bonding implements OnChainService {
   private _conn: Connection
-  public onPairBonding: (data: any) => void
+  public bindingCallBack: onBindingCallback
 
   init(conn: Connection): boolean {
     this._conn = conn
@@ -51,8 +53,9 @@ export default class Bonding implements OnChainService {
       const tokenInfo = await decodeTransferTransaction(this._conn, signature)
       logger.info(`Fetching Liquidity Merged：${tokenInfo.symbol} ${tokenInfo.address}`)
 
-      if (this.onPairBonding) {
-        this.onPairBonding(tokenInfo)
+      console.log('callback', this.bindingCallBack)
+      if (this.bindingCallBack) {
+        this.bindingCallBack(tokenInfo)
       }
     } catch (err) {
       throw new Error('Decoding tx failed', err)
