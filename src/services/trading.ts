@@ -18,12 +18,12 @@ const SOL_MINT_ADDRESS = 'So11111111111111111111111111111111111111112'
 const SLIPPAGE_MAX_BPS = 1000
 
 export default class Trading {
-  private readonly _connection: Connection
+  private _connection: Connection
   private readonly _wsClient: WebsocketAPI
   private _wallet: Wallet
   private _solPrice: number
 
-  constructor({ connection }) {
+  constructor() {
     const callbacks = {
       open: (client: WebsocketAPI) => {
         console.debug(chalk.blue('Connected to Binance WebSocket server'))
@@ -38,9 +38,16 @@ export default class Trading {
       }
     }
 
-    this._connection = connection
     this._wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.WALLET_PRIVATE_KEY || '')))
     this._wsClient = new WebsocketAPI('', '', { callbacks })
+  }
+
+  /**
+   *
+   * @param conn
+   */
+  setConnection(conn: Connection) {
+    this._connection = conn
   }
 
   /**

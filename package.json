@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "channel": "bun ./src/bot/channel.ts",
-    "message": "bun ./src/bot/message.ts",
+    "trading": "bun ./src/scripts/trading.ts",
     "dev": "bun ./src/index.ts",
     "bot": "bun ./src/bot/index.ts",
     "telegram": "bun ./src/telegram/startup.ts",

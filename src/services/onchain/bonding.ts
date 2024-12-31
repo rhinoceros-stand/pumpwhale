@@ -20,7 +20,7 @@ export default class Bonding implements OnChainService {
     }
 
     this._conn.onLogs(PUMP_FUN_LIQUIDITY_BONDING_ADDRESS, this.decodeEvent)
-
+    logger.info('Register Bonding Callback!')
 
     return true
   }
@@ -51,7 +51,9 @@ export default class Bonding implements OnChainService {
       const tokenInfo = await decodeTransferTransaction(this._conn, signature)
       logger.info(`Fetching Liquidity Merged：${tokenInfo.symbol} ${tokenInfo.address}`)
 
-      return tokenInfo
+      if (this.onPairBonding) {
+        this.onPairBonding(tokenInfo)
+      }
     } catch (err) {
       throw new Error('Decoding tx failed', err)
     }

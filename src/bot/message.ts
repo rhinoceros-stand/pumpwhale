@@ -6,62 +6,69 @@ import PumpFun from '../services/pumpfun'
 import Trading from '../services/trading'
 import { logger } from '../utils/logger'
 import { renderSwap } from './_utils/template'
+import Bonding from '../services/onchain/bonding'
 
 dotenv.config({
   path: ['.env.local', 'env']
 })
 
 const PRIVATE_CHAT_ID = 7216621593
-let connection: Connection
-let trading: Trading
-let pumpFun: PumpFun
 
-/**
- *
- * @param tokenData
- */
-const onPairBonding = async (tokenData) => {
-  const {
-    address,
-    name,
-    symbol
-  } = tokenData
+export default class BotMessage {
+  private readonly SOL_RPC_URL = process.env.SOLANA_RPC_URL
+  private readonly BOT_SECRET = process.env.TELEGRAM_BOT_SECRET
 
-  logger.info(`${name} ($${chalk.yellow(symbol)}) ${address}`)
+  private _bot: Bot
+  private _conn: Connection
+  private _trading: Trading
+  private _bonding: Bonding
 
-  const tx = await trading.startTokenSwap(address)
-  if (!tx) {
-    return
+  constructor() {
+    this._conn = new Connection(this.SOL_RPC_URL, 'confirmed')
+    this._bot = new Bot(this.BOT_SECRET)
   }
 
-  // start swap
-  bot.api.sendMessage({
-    chat_id: PRIVATE_CHAT_ID,
-    text: renderSwap(name, symbol, address, tx)
-  })
+  /**
+   * 初始化服务
+   */
+  initService() {
+    this._trading = new Trading()
+    this._trading.setConnection(this._conn)
+
+    this._bonding = new Bonding()
+    this._bonding.init(this._conn)
+    this._bonding.start()
+    this._bonding.onPairBonding = this.onPairBonding
+  }
+
+  start() {
+    this._bot.onStart((params) => {
+      logger.info(`Swap Bot ${params.info.first_name} running...`)
+    })
+  }
+
+  /**
+   *
+   * @param data
+   */
+  async onPairBonding(data: any) {
+    const {
+      address,
+      name,
+      symbol
+    } = data
+
+    logger.info(`${name} ($${chalk.yellow(symbol)}) ${address}`)
+
+    // start swap
+    const tx = await this._trading.startTokenSwap(address)
+    if (!tx) {
+      return
+    }
+
+    this._bot.api.sendMessage({
+      chat_id: PRIVATE_CHAT_ID,
+      text: renderSwap(name, symbol, address, tx)
+    })
+  }
 }
-
-try {
-  connection = new Connection(process.env.SOLANA_RPC_URL + '1', 'confirmed')
-  trading = new Trading({
-    connection
-  })
-  pumpFun = new PumpFun({
-    connection,
-    onPairBonding
-  })
-
-  logger.info('RPC Connected')
-} catch (err) {
-  logger.error('RPC Connection Error', err)
-}
-
-const secret = process.env.TELEGRAM_BOT_SECRET
-const bot = new Bot(secret)
-bot.onStart((params) => {
-  console.log(`Swap Bot ${chalk.blue(params.info.first_name)} running...`)
-})
-
-// bot.start()
-// pumpFun.start()
-
