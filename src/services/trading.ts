@@ -147,13 +147,14 @@ export default class Trading {
       })
     }
 
-    if (holders < 300) {
-      console.log(`${chalk.blue(tokenInfo.name)}(${chalk.red(tokenInfo.address)}) holders ${holders} is below 300, won't swap it.`)
+    if (holders < 200) {
+      console.log(`${chalk.blue(tokenInfo.name)}(${chalk.red(tokenInfo.address)}) holders ${holders} is below 200, won't swap it.`)
+      return
     }
 
     // Swapping SOL to Mint Address with input 0.005 SOL and 10% slippage
     // 查询代币报价
-    // 使用 0.005 SOL 互换，交易滑点 10%
+    // 使用 0.0005 SOL 互换，交易滑点 10%
     const quoteResponse = await (
       await fetch(`https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT_ADDRESS}&outputMint=${address}&amount=${SOL_ORDER_AMOUNT}&slippageBps=${SLIPPAGE_MAX_BPS}`
       )
@@ -163,9 +164,9 @@ export default class Trading {
     const mcapUSD = this.getMarketCAP(quoteResponse.outAmount, supply.value.amount)
     const marketStr = this.formatMarketCAP(mcapUSD)
 
-    // 如果市值低于 100K，跳过 Swap
-    if (mcapUSD < 100000) {
-      console.log(`${chalk.blue(tokenInfo.name)}(${chalk.red(tokenInfo.address)}) mcap is ${chalk.red(marketStr)}, it's below 100K, won't swap it.`)
+    // 如果市值低于 70K，跳过 Swap
+    if (mcapUSD < 70000) {
+      console.log(`${chalk.blue(tokenInfo.name)}(${chalk.red(tokenInfo.address)}) mcap is ${chalk.red(marketStr)}, it's below 70K, won't swap it.`)
       return
     }
 
@@ -187,6 +188,8 @@ export default class Trading {
       const solAmount = SOL_ORDER_AMOUNT / LAMPORTS_PER_SOL
       console.log(`${tokenAmount} ${`$${chalk.blue(tokenInfo.name)}`} swap with ${solAmount} SOL, Price ${chalk.green(Number(price).toFixed(4))}`)
     }
+
+    return tx
   }
 
   /**
