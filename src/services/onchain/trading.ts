@@ -85,13 +85,13 @@ export default class Trading implements OnChainService {
 
     const holderMinimum = 200
     if (holders < holderMinimum) {
-      logger.info(`$${tokenMetadata.symbol}(${tokenMetadata.address}) Holders is less than ${holderMinimum}, ignore for swap.`)
+      logger.warn(`$${tokenMetadata.symbol}(${tokenMetadata.address}) Holders is less than ${holderMinimum}, ignore for swap.`)
       return
     }
 
     const tokenValueMinimum = 85000
     if (marketCapitalization < tokenValueMinimum) {
-      logger.info(`$${tokenMetadata.symbol}(${tokenMetadata.address}) market capitalization is less than ${tokenValueMinimum}, ignore for swap.`)
+      logger.warn(`$${tokenMetadata.symbol}(${tokenMetadata.address}) market capitalization is less than ${tokenValueMinimum}, ignore for swap.`)
       return
     }
 
