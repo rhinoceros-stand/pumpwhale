@@ -11,7 +11,7 @@ import { getWalletProfit } from './api/gmgn'
   })
 
   const connection = new Connection(process.env.SOLANA_RPC_URL, 'confirmed')
-  const trading = new Trading({ connection })
+
   const profitList = await getWalletProfit('')
   const coloredList = profitList.map(v => {
     const profit = Number(v.profit)
