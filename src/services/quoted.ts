@@ -1,3 +1,4 @@
+import fetch from 'cross-fetch'
 import { logger } from '../utils/logger'
 
 const REST_API_OKX = 'https://www.okx.com/api/v5/market/index-tickers?instId=SOL-USDT'
@@ -9,8 +10,6 @@ export default class Quoted {
 
   constructor({ onQuoteChange }) {
     this._callback = onQuoteChange
-
-    this.onFetchPrice()
     this.callPriceOnce()
   }
 
@@ -30,7 +29,7 @@ export default class Quoted {
         logger.info(`SOLUSDT: ${lastPrice}`)
         return this.SOL_PRICE
       } else {
-        throw new Error('Bybit SOLUSD ticker price not found.')
+        throw new Error('OKX SOLUSDT latest price not found.')
       }
     }
   }
@@ -39,6 +38,8 @@ export default class Quoted {
    *
    */
   callPriceOnce() {
-    this._timeId = setTimeout(this.onFetchPrice.bind(this), 1000 * 5 * 10)
+    this.onFetchPrice().then(() => {
+      this._timeId = setTimeout(this.callPriceOnce.bind(this), 1000 * 300)
+    })
   }
 }
