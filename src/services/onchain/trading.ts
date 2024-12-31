@@ -159,7 +159,8 @@ export default class Trading implements OnChainService {
       // Execute the transaction
       const rawTransaction = transaction.serialize()
       const txid = await this._conn.sendRawTransaction(rawTransaction, {
-        skipPreflight: false
+        skipPreflight: true,
+        maxRetries: 2
       })
 
       // 查询交易是否成功
