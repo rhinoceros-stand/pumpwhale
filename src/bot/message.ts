@@ -1,10 +1,11 @@
+import { Connection } from '@solana/web3.js'
 import * as dotenv from 'dotenv'
 import { Bot } from 'gramio'
 import chalk from 'chalk'
-import { bold, format, link } from '@gramio/format'
-import { Connection } from '@solana/web3.js'
 import PumpFun from '../services/pumpfun'
 import Trading from '../services/trading'
+import { logger } from '../utils/logger'
+import { renderSwap } from './_utils/template'
 
 dotenv.config({
   path: ['.env.local', 'env']
@@ -26,7 +27,8 @@ const onPairBonding = async (tokenData) => {
     symbol
   } = tokenData
 
-  console.log(`${chalk.blue(name)}($${chalk.yellow(symbol)}) ${chalk.white(address)}`)
+  logger.info(`${name} ($${chalk.yellow(symbol)}) ${address}`)
+
   const tx = await trading.startTokenSwap(address)
   if (!tx) {
     return
@@ -35,22 +37,12 @@ const onPairBonding = async (tokenData) => {
   // start swap
   bot.api.sendMessage({
     chat_id: PRIVATE_CHAT_ID,
-    text:
-      format`
-        Swap 0.0005SOL for ${bold(name)}($${bold(symbol)})
-        ${bold(address)}
-        Links: ${link(
-        'GMGN.ai',
-        `https://gmgn.ai/sol/token/${tokenData.address}`
-      )} | ${link(
-        'TX',
-        `https://solscan.io/tx/${tx}`
-      )}`
+    text: renderSwap(name, symbol, address, tx)
   })
 }
 
 try {
-  connection = new Connection(process.env.SOLANA_RPC_URL, 'confirmed')
+  connection = new Connection(process.env.SOLANA_RPC_URL + '1', 'confirmed')
   trading = new Trading({
     connection
   })
@@ -58,9 +50,10 @@ try {
     connection,
     onPairBonding
   })
-  console.info('RPC Connected')
+
+  logger.info('RPC Connected')
 } catch (err) {
-  console.error('RPC Connection Error', err)
+  logger.error('RPC Connection Error', err)
 }
 
 const secret = process.env.TELEGRAM_BOT_SECRET
@@ -69,6 +62,6 @@ bot.onStart((params) => {
   console.log(`Swap Bot ${chalk.blue(params.info.first_name)} running...`)
 })
 
-bot.start()
-pumpFun.start()
+// bot.start()
+// pumpFun.start()
 
