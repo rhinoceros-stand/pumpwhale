@@ -18,6 +18,7 @@ export async function getTokenMeatData(mintAddress: PublicKey, conn: Connection)
     return {
       name: token.name,
       symbol: token.symbol,
+      address: token.address.toBase58(),
       supply: mintInfo.supply,
       decimals: token.mint.decimals
     }
