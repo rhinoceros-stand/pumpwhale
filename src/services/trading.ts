@@ -147,8 +147,8 @@ export default class Trading {
       })
     }
 
-    if (holders < 200) {
-      console.log(`${chalk.blue(tokenInfo.name)}(${chalk.red(tokenInfo.address)}) holders ${holders} is below 200, won't swap it.`)
+    if (holders < 300) {
+      console.log(`${chalk.blue(tokenInfo.name)}(${chalk.red(tokenInfo.address)}) holders ${holders} is below 300, won't swap it.`)
       return
     }
 
@@ -165,8 +165,8 @@ export default class Trading {
     const marketStr = this.formatMarketCAP(mcapUSD)
 
     // 如果市值低于 70K，跳过 Swap
-    if (mcapUSD < 70000) {
-      console.log(`${chalk.blue(tokenInfo.name)}(${chalk.red(tokenInfo.address)}) mcap is ${chalk.red(marketStr)}, it's below 70K, won't swap it.`)
+    if (mcapUSD < 85000) {
+      console.log(`${chalk.blue(tokenInfo.name)}(${chalk.red(tokenInfo.address)}) mcap is ${chalk.red(marketStr)}, it's below 85K, won't swap it.`)
       return
     }
 
