@@ -3,11 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "channel": "bun ./src/bot/channel.ts",
+    "channel": "bun ./src/scripts/channel.ts",
+    "startup": "bun ./src/index.ts",
     "trading": "bun ./src/scripts/trading.ts",
-    "dev": "bun ./src/index.ts",
-    "bot": "bun ./src/bot/index.ts",
-    "telegram": "bun ./src/telegram/startup.ts",
     "webservice": "bun --watch ./src/webservice/main.ts"
   },
   "devDependencies": {
