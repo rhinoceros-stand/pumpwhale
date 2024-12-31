@@ -38,6 +38,13 @@ export default class BotMessage {
    */
   private _bonding: Bonding
 
+  /**
+   * SOL 报价服务
+   * 用于计算市值和下单价格
+   * @private
+   */
+  private _quoted: Quoted
+
   constructor() {
     this._conn = new Connection(this.SOL_RPC_URL, 'confirmed')
     this._bot = new Bot(this.BOT_SECRET)
@@ -46,12 +53,21 @@ export default class BotMessage {
   /**
    * 初始化服务
    */
-  initService() {
+  async initService() {
     this._bonding = new Bonding()
     this._bonding.init(this._conn)
     this._bonding.setCallback(this.onPairBonding.bind(this))
 
+    this._quoted = new Quoted({
+      onQuoteChange: (value: number) => {
+        this._trading.solanaPrice = value
+      }
+    })
+
+    const liveSOLPrice = await this._quoted.onFetchPrice()
+
     this._trading = new Trading()
+    this._trading.solanaPrice = liveSOLPrice
     this._trading.init(this._conn)
   }
 

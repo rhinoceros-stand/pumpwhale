@@ -3,7 +3,6 @@ import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, VersionedTransaction 
 import bs58 from 'bs58'
 import queryString from 'query-string'
 import { getTokenHolders, getTokenMeatData } from './metadata'
-import Quoted from '../quoted'
 import { logger } from '../../utils/logger'
 import { OnChainService } from './index'
 
@@ -21,19 +20,14 @@ const SLIPPAGE_DEFAULT_BPS = 1000
 
 export default class Trading implements OnChainService {
   private _conn: Connection
-  private _solPrice: number
   private _wallet: Wallet
-  private _quoted: Quoted
+
+  public solanaPrice: number
+
 
   init(conn: Connection): boolean {
     this._conn = conn
     this._wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.WALLET_PRIVATE_KEY || '')))
-
-    this._quoted = new Quoted({
-      onQuoteChange: (value: number) => {
-        this._solPrice = value
-      }
-    })
 
     return true
   }
@@ -58,14 +52,15 @@ export default class Trading implements OnChainService {
   async startTokenSwap(address: string) {
     const mintAddress = new PublicKey(address)
 
+
     // 获取代币信息
     const tokenMetadata = await getTokenMeatData(mintAddress, this._conn)
 
     // 查询代币报价
     const pairQuoteResponse = await this.getTokenPairQuote(address)
 
-    //
-    const valueInUSD = this._solPrice * (SOL_ORDER_AMOUNT / LAMPORTS_PER_SOL)
+    // 计算下单价值
+    const valueInUSD = this.solanaPrice * (SOL_ORDER_AMOUNT / LAMPORTS_PER_SOL)
 
     // 获取单价和市值
     const {
