@@ -1,8 +1,8 @@
-import { Spot } from '@binance/connector-typescript'
 import { logger } from '../utils/logger'
 
+const REST_API_OKX = 'https://www.okx.com/api/v5/market/index-tickers?instId=SOL-USDT'
+
 export default class Quoted {
-  private _client
   private _timeId: Timer
   private SOL_PRICE: number = -1
   private _callback: (value: number) => void
@@ -10,19 +10,35 @@ export default class Quoted {
   constructor({ onQuoteChange }) {
     this._callback = onQuoteChange
 
-    this._client = new Spot('', '', { baseURL: 'https://api.binance.com' })
     this.onFetchPrice()
+    this.callPriceOnce()
   }
 
+  /**
+   * 获取价格
+   */
   async onFetchPrice() {
-    const response = await this._client.currentAveragePrice('SOLUSDT')
-    this.SOL_PRICE = Number(response.price)
-    logger.info(`SOLUSDT: ${response.price}`)
+    const response = await (
+      await fetch(REST_API_OKX)
+    ).json()
 
-    if (this._callback) {
-      this._callback(this.SOL_PRICE)
+    if (response.code === '0') {
+      const data = response?.data[0]
+      const lastPrice = data?.idxPx
+      if (lastPrice) {
+        this.SOL_PRICE = Number(lastPrice)
+        logger.info(`SOLUSDT: ${lastPrice}`)
+        return this.SOL_PRICE
+      } else {
+        throw new Error('Bybit SOLUSD ticker price not found.')
+      }
     }
+  }
 
-    this._timeId = setTimeout(this.onFetchPrice.bind(this), 1000 * 60 * 10)
+  /**
+   *
+   */
+  callPriceOnce() {
+    this._timeId = setTimeout(this.onFetchPrice.bind(this), 1000 * 5 * 10)
   }
 }
