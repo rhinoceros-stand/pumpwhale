@@ -1,15 +1,13 @@
-import { OnChainService } from './index'
 import { Connection, Logs, PublicKey } from '@solana/web3.js'
-import { decodeTransferTransaction } from '../../metadata'
 import { logger } from '../../utils/logger'
-
-export type onBindingCallback = (data: any) => void
+import { decodeTransferTransaction } from '../../metadata'
+import { OnChainService } from './index'
 
 const PUMP_FUN_LIQUIDITY_BONDING_ADDRESS = new PublicKey('39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg')
 
 export default class Bonding implements OnChainService {
   private _conn: Connection
-  public bindingCallBack: onBindingCallback
+  private _callback: (data: any) => void
 
   init(conn: Connection): boolean {
     this._conn = conn
@@ -21,7 +19,28 @@ export default class Bonding implements OnChainService {
       throw new Error('RPC empty connection, initialize it at first.')
     }
 
-    this._conn.onLogs(PUMP_FUN_LIQUIDITY_BONDING_ADDRESS, this.decodeEvent)
+    this._conn.onLogs(PUMP_FUN_LIQUIDITY_BONDING_ADDRESS, (logs) => {
+      const { signature } = logs
+
+      const logList = logs.logs
+
+      if (!Array.isArray(logList)) {
+        return
+      }
+
+      const isTokenBounding = logList && logList.some(log => log.includes('initialize2'))
+      if (!isTokenBounding) {
+        return
+      }
+
+      decodeTransferTransaction(this._conn, signature).then((mint) => {
+        logger.info(`Fetching Liquidity Merged：${mint.symbol} ${mint.address}`)
+        if (this._callback) {
+          this._callback(mint)
+        }
+      }).catch(err => logger.error(`Decoding tx ${signature} failed `, err))
+    })
+
     logger.info('Register Bonding Callback!')
 
     return true
@@ -31,34 +50,10 @@ export default class Bonding implements OnChainService {
   }
 
   /**
-   * 解析 Bonding 事件
-   * @param logData
+   *
+   * @param callback
    */
-  async decodeEvent(logData: Logs) {
-    const {
-      signature,
-      logs
-    } = logData
-
-    if (!Array.isArray(logs)) {
-      return
-    }
-
-    const isTokenBounding = logs && logs.some(log => log.includes('initialize2'))
-    if (!isTokenBounding) {
-      return
-    }
-
-    try {
-      const tokenInfo = await decodeTransferTransaction(this._conn, signature)
-      logger.info(`Fetching Liquidity Merged：${tokenInfo.symbol} ${tokenInfo.address}`)
-
-      console.log('callback', this.bindingCallBack)
-      if (this.bindingCallBack) {
-        this.bindingCallBack(tokenInfo)
-      }
-    } catch (err) {
-      throw new Error('Decoding tx failed', err)
-    }
+  setCallback(callback: any) {
+    this._callback = callback
   }
 }

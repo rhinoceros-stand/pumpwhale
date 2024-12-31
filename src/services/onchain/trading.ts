@@ -1,10 +1,11 @@
 import { Wallet } from '@project-serum/anchor'
-import { Connection, Keypair, LAMPORTS_PER_SOL, Logs, PublicKey } from '@solana/web3.js'
+import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, VersionedTransaction } from '@solana/web3.js'
 import bs58 from 'bs58'
 import queryString from 'query-string'
 import { getTokenHolders, getTokenMeatData } from './metadata'
 import { logger } from '../../utils/logger'
 import { OnChainService } from './index'
+import Quoted from '../quoted'
 
 const SOL_MINT_ADDRESS = 'So11111111111111111111111111111111111111112'
 
@@ -20,12 +21,20 @@ const SLIPPAGE_DEFAULT_BPS = 1000
 
 export default class Trading implements OnChainService {
   private _conn: Connection
-  private _wallet: Wallet
   private _solPrice: number
+  private _wallet: Wallet
+  private _quoted: Quoted
 
   init(conn: Connection): boolean {
     this._conn = conn
     this._wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.WALLET_PRIVATE_KEY || '')))
+
+    this._quoted = new Quoted({
+      onQuoteChange: (value: number) => {
+        this._solPrice = value
+      }
+    })
+
     return true
   }
 
@@ -40,14 +49,6 @@ export default class Trading implements OnChainService {
   }
 
   stop(): boolean {
-  }
-
-  /**
-   * SOL 报价更新
-   * @param value
-   */
-  onSolanaPriceUpdate(value: number) {
-    this._solPrice = value
   }
 
   /**

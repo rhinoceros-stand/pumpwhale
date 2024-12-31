@@ -1,9 +1,8 @@
 import { Connection } from '@solana/web3.js'
 import * as dotenv from 'dotenv'
 import { Bot } from 'gramio'
-import chalk from 'chalk'
 import Bonding from '../services/onchain/bonding'
-import Trading from '../services/trading'
+import Trading from '../services/onchain/trading'
 import Quoted from '../services/quoted'
 import { logger } from '../utils/logger'
 import { renderSwap } from './_utils/template'
@@ -18,11 +17,26 @@ export default class BotMessage {
   private readonly SOL_RPC_URL = process.env.SOLANA_RPC_URL
   private readonly BOT_SECRET = process.env.TELEGRAM_BOT_SECRET
 
+  /**
+   * Telegram Bot
+   * @private
+   */
   private _bot: Bot
+
   private _conn: Connection
+
+  /**
+   * 交易服务
+   * @private
+   */
   private _trading: Trading
+
+  /**
+   * Bonding 服务
+   * 接收流动性注入通知
+   * @private
+   */
   private _bonding: Bonding
-  private _quoted: Quoted
 
   constructor() {
     this._conn = new Connection(this.SOL_RPC_URL, 'confirmed')
@@ -33,17 +47,12 @@ export default class BotMessage {
    * 初始化服务
    */
   initService() {
-    this._trading = new Trading()
-    this._trading.setConnection(this._conn)
-
-    this._quoted = new Quoted({
-      onQuoteChange: this._trading.onSolanaPriceUpdate
-    })
-
     this._bonding = new Bonding()
     this._bonding.init(this._conn)
-    this._bonding.bindingCallBack = this.onPairBonding
+    this._bonding.setCallback(this.onPairBonding.bind(this))
 
+    this._trading = new Trading()
+    this._trading.init(this._conn)
   }
 
   /**
@@ -67,8 +76,6 @@ export default class BotMessage {
       name,
       symbol
     } = data
-
-    logger.info(`${name} ($${chalk.yellow(symbol)}) ${address}`)
 
     // start swap
     const tx = await this._trading.startTokenSwap(address)

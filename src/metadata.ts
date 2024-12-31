@@ -6,53 +6,6 @@ import { findLast, get, pick } from 'lodash'
 const RAYDIUM_V4 = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
 
 /**
- * 解析 Mint 交易
- * @param connection
- * @param signature
- * @returns
- */
-export const decodeMintTransaction = async (connection: Connection, signature: string) => {
-  try {
-    const tx = await connection.getParsedTransaction(signature, {
-      commitment: 'confirmed',
-      maxSupportedTransactionVersion: 0
-    })
-
-    if (!tx) {
-      return null
-    }
-
-    let mintAddress = ''
-
-    const txCreate = tx.meta?.innerInstructions?.[0]
-    if (txCreate && txCreate.instructions) {
-      txCreate.instructions?.forEach((item) => {
-
-        const {
-          type,
-          info
-        } = pick(get(item, 'parsed'), [
-          'type',
-          'info'
-        ])
-
-        if (type === 'initializeMint2') {
-          mintAddress = get(info, 'mint')
-        }
-      })
-
-      if (!mintAddress) {
-        return
-      }
-
-      return await getTokenInfo(connection, mintAddress)
-    }
-  } catch (err) {
-    console.error('Error fetching transaction:', err)
-  }
-}
-
-/**
  * 解析转账交易
  * @param connection
  * @param signature
@@ -72,6 +25,7 @@ export const decodeTransferTransaction = async (connection: Connection, signatur
     let mintAddress = ''
 
     const tokenBalances = tx.meta?.postTokenBalances
+
     if (Array.isArray(tokenBalances)) {
       const selectedRecord = findLast(tokenBalances, record => {
         return record.owner === RAYDIUM_V4 && record.mint !== 'So11111111111111111111111111111111111111112'
