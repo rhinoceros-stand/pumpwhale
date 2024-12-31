@@ -3,9 +3,9 @@ import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, VersionedTransaction 
 import bs58 from 'bs58'
 import queryString from 'query-string'
 import { getTokenHolders, getTokenMeatData } from './metadata'
+import Quoted from '../quoted'
 import { logger } from '../../utils/logger'
 import { OnChainService } from './index'
-import Quoted from '../quoted'
 
 const SOL_MINT_ADDRESS = 'So11111111111111111111111111111111111111112'
 
@@ -85,18 +85,18 @@ export default class Trading implements OnChainService {
 
     const holderMinimum = 200
     if (holders < holderMinimum) {
-      logger.warning(`$${tokenMetadata.symbol}(${tokenMetadata.address}) Holders is less than ${holderMinimum}, ignore for swap.`)
+      logger.info(`$${tokenMetadata.symbol}(${tokenMetadata.address}) Holders is less than ${holderMinimum}, ignore for swap.`)
       return
     }
 
     const tokenValueMinimum = 85000
     if (marketCapitalization < tokenValueMinimum) {
-      logger.warning(`$${tokenMetadata.symbol}(${tokenMetadata.address}) market capitalization is less than ${tokenValueMinimum}, ignore for swap.`)
+      logger.info(`$${tokenMetadata.symbol}(${tokenMetadata.address}) market capitalization is less than ${tokenValueMinimum}, ignore for swap.`)
       return
     }
 
     // 准备交易
-    const tx = await this.preparingSwap(pairQuoteResponse)
+    const tx = await this.preparingSwap(address)
 
     // 根据 transaction 查询交换的代币数量，输出单价
     const transactionInfo = await this._conn.getParsedTransaction(tx, {
@@ -119,9 +119,12 @@ export default class Trading implements OnChainService {
 
   /**
    * 准备交换
-   * @param quoteResponse 报价信息
+   * @param mintAddress 报价信息
    */
-  async preparingSwap(quoteResponse: any) {
+  async preparingSwap(mintAddress: string) {
+    // 查询代币报价
+    const quoteResponse = await this.getTokenPairQuote(mintAddress)
+
     // get serialized transactions for the swap
     const { swapTransaction } = await (
       await fetch('https://quote-api.jup.ag/v6/swap', {
