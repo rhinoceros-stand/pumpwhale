@@ -1,8 +1,6 @@
 import chalk from 'chalk'
 import { pick } from 'lodash'
 import * as dotenv from 'dotenv'
-import { Connection } from '@solana/web3.js'
-import Trading from './services/trading'
 import { getWalletProfit } from './api/gmgn'
 
 (async () => {
@@ -10,9 +8,7 @@ import { getWalletProfit } from './api/gmgn'
     path: ['.env.local', 'env']
   })
 
-  const connection = new Connection(process.env.SOLANA_RPC_URL, 'confirmed')
-
-  const profitList = await getWalletProfit('')
+  const profitList = await getWalletProfit('ByMszMN63xeJs9CqqaErRmKqJx4sjZd6eHfqQwwyDSSk')
   const coloredList = profitList.map(v => {
     const profit = Number(v.profit)
     return {

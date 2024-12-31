@@ -17,15 +17,18 @@ export const getWalletProfit = async (walletAddress: string) => {
 
   const holdings = get(response, 'data.holdings')
   if (Array.isArray(holdings) && holdings.length > 0) {
-    return holdings.map(v => {
-      const profit = Number(v.realized_profit)
-      return {
-        balance: Number(v.balance),
-        symbol: v.token.symbol,
-        tokenAddress: v.token.token_address,
-        profit
-      }
-    }).sort((a, b) => b.profit - a.profit)
+    return holdings
+      .map(v => {
+        const profit = Number(v.realized_profit)
+        return {
+          balance: Number(v.balance),
+          symbol: v.token.symbol,
+          tokenAddress: v.token.token_address,
+          profit
+        }
+      })
+      .sort((a, b) => b.profit - a.profit)
+      .filter(v => v.balance)
   }
 
   return []
