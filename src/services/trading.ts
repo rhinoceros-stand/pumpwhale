@@ -32,11 +32,11 @@ export default class Trading {
   }
 
   /**
-   * 更新 SOL 价格
-   * @param price
+   * SOL 报价更新
+   * @param value
    */
-  updateSOLPrice(price: number) {
-    this._solPrice = price
+  onSolanaPriceUpdate(value: number) {
+    this._solPrice = value
   }
 
   /**

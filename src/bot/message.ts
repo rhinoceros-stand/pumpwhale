@@ -37,7 +37,7 @@ export default class BotMessage {
     this._trading.setConnection(this._conn)
 
     this._quoted = new Quoted({
-      callback: this._trading.updateSOLPrice
+      onQuoteChange: this._trading.onSolanaPriceUpdate
     })
 
     this._bonding = new Bonding()
