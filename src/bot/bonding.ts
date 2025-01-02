@@ -56,6 +56,10 @@ export default class BondingBot {
       const tokenMeta = await getTokenMeatData(mintAddress, this._conn)
 
       logger.info(`Fetching Liquidity Merged：${tokenMeta.symbol} ${tokenMeta.address}`)
+
+      // Send Event to Telegram Channel
+      this._emitter.emit('channel', tokenMeta)
+
       const updateResult = await collection.updateOne({ signature }, {
         $set: {
           ...tokenMeta
