@@ -26,7 +26,7 @@ export default class BondingBot {
   /**
    * 初始化服务
    */
-  async initService() {
+  initService() {
     this._bonding = new Bonding()
     this._bonding.init(this._conn, this._emitter)
     this._emitter.on('mint', this.handleLiquidBounding.bind(this))
