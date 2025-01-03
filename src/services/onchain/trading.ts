@@ -43,6 +43,7 @@ export default class Trading implements OnChainService {
   }
 
   stop(): boolean {
+    return true
   }
 
   /**

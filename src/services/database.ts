@@ -9,11 +9,17 @@ export default class Database {
     this._client = new MongoClient(this.CONNECT_URL)
   }
 
+  /**
+   *
+   */
   public async getDB() {
     await this._client.connect()
-    return this._client.db('solana')
+    return this._client.db(this._db_name)
   }
 
+  /**
+   *
+   */
   public close() {
     return this._client.close()
   }

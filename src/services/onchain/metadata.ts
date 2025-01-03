@@ -49,7 +49,10 @@ export async function getTokenHolders(mintAddress: PublicKey, conn: Connection) 
   })
 
   const holders = accounts
-    .filter((account) => account.account.data.parsed.info.tokenAmount.uiAmount > 0)
+    .filter((account) => {
+      // @ts-ignore
+      return account.account.data.parsed.info.tokenAmount.uiAmount > 0
+    })
     .map((account) => account.pubkey.toBase58())
 
   return holders.length
