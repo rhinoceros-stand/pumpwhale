@@ -1,5 +1,6 @@
 import { Connection } from '@solana/web3.js'
 import { createNanoEvents } from 'nanoevents'
+import Channel from '../services/telegram/channel'
 import Database from '../services/database'
 import Bonding from '../services/onchain/bonding'
 import { decodeBondingTransaction } from '../services/onchain/transaction'
@@ -10,6 +11,7 @@ export default class BondingBot {
   private readonly _conn: Connection
   private readonly _database: Database
   private readonly _emitter = createNanoEvents()
+  private readonly _channel: Channel
 
   /**
    * Bonding 服务
@@ -21,6 +23,7 @@ export default class BondingBot {
   constructor(rpcUrl: string) {
     this._conn = new Connection(rpcUrl, 'confirmed')
     this._database = new Database()
+    this._channel = new Channel(process.env.TELEGRAM_BOT_SECRET)
   }
 
   /**
@@ -30,6 +33,9 @@ export default class BondingBot {
     this._bonding = new Bonding()
     this._bonding.init(this._conn, this._emitter)
     this._emitter.on('mint', this.handleLiquidBounding.bind(this))
+
+    // 启动 Telegram Bot
+    this._channel.start()
   }
 
   /**
@@ -57,8 +63,10 @@ export default class BondingBot {
 
       logger.info(`Fetching Liquidity Merged：${tokenMeta.symbol} ${tokenMeta.address}`)
 
-      // Send Event to Telegram Channel
-      this._emitter.emit('channel', tokenMeta)
+      // Send to Telegram Channel
+      if (this._channel) {
+        this._channel.sendBondingMessage(tokenMeta)
+      }
 
       const updateResult = await collection.updateOne({ signature }, {
         $set: {

@@ -4,7 +4,7 @@ import { renderBonding } from './_utils/template'
 
 const CHANNEL_NAME = '@pumpfun_bonding_alert'
 
-export default class ChannelBot {
+export default class Channel {
   /**
    * Telegram Bot
    * @private
@@ -20,7 +20,7 @@ export default class ChannelBot {
    */
   start() {
     this._bot.onStart((params) => {
-      logger.info(`Channel Bot ${params.info.first_name} running...`)
+      logger.info(`Telegram Channel Bot ${params.info.first_name} running...`)
     })
   }
 
