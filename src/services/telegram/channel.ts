@@ -29,11 +29,11 @@ export default class Channel {
    * @param message
    */
   sendBondingMessage(message: any) {
-    const { name, symbol, address } = message
+    const { name, symbol, address, holders } = message
 
     this._bot.api.sendMessage({
       chat_id: CHANNEL_NAME,
-      text: renderBonding(name, symbol, address)
+      text: renderBonding(address, symbol, name, holders)
     })
   }
 }

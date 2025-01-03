@@ -14,13 +14,15 @@ export async function getTokenMeatData(mintAddress: PublicKey, conn: Connection)
   const metadataAccountInfo = await conn.getAccountInfo(metadataAccount)
   if (metadataAccountInfo) {
     const token = await metaplex.nfts().findByMint({ mintAddress })
+    const holders = await getTokenHolders(mintAddress, conn)
 
     return {
       name: token.name,
       symbol: token.symbol,
       address: token.address.toBase58(),
       supply: mintInfo.supply,
-      decimals: token.mint.decimals
+      decimals: token.mint.decimals,
+      holders
     }
   } else {
     return {}

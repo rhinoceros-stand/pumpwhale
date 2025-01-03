@@ -2,14 +2,16 @@ import { bold, format, link } from '@gramio/format'
 
 /**
  * 输出 Bonding 消息
- * @param name
- * @param symbol
  * @param mintAddress
+ * @param symbol
+ * @param name
+ * @param holders
  */
-export function renderBonding(name: string, symbol: string, mintAddress: string) {
+export function renderBonding(mintAddress: string, symbol: string, name: string, holders: number) {
   return format`
    ${bold(name)}($${bold(symbol)})
    ${bold(mintAddress)}
+   Holders: ${bold(holders)}
    Links: ${link(
     'Pump.fun', `https://pump.fun/coin/${mintAddress}`
   )} | ${link(
