@@ -5,6 +5,7 @@
   "scripts": {
     "bonding": "bun ./src/scripts/bonding.ts",
     "trading": "bun ./src/scripts/trading.ts",
+    "startup": "bun --watch ./src/index.ts",
     "webservice": "bun --watch ./src/webservice/main.ts"
   },
   "devDependencies": {
