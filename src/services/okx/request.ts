@@ -6,6 +6,11 @@ const ACCESS_KEY = process.env.OK_ACCESS_KEY
 const SECRET_KEY = process.env.OK_ACCESS_SIGN
 const PASSPHRASE_KEY = process.env.OK_ACCESS_PASSPHRASE
 
+/**
+ *
+ */
+export const SOLANA_CHAIN_ID = 501
+
 export function serializeParams(
   params: object | undefined,
   method: String
