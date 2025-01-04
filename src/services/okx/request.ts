@@ -11,6 +11,13 @@ const PASSPHRASE_KEY = process.env.OK_ACCESS_PASSPHRASE
  */
 export const SOLANA_CHAIN_ID = 501
 
+function getRequestUrl(url: string, params?: any) {
+  return queryString.stringifyUrl({
+    url: `https://www.okx.com${url}`,
+    query: params
+  })
+}
+
 export function serializeParams(
   params: object | undefined,
   method: String
@@ -54,13 +61,7 @@ export default async function (url: string, params?: any, method = 'GET') {
       'OK-ACCESS-TIMESTAMP': tsISO,
       'OK-ACCESS-PASSPHRASE': PASSPHRASE_KEY,
       'OK-ACCESS-PROJECT': 'BOT_API'
-    }
-  })
-}
-
-function getRequestUrl(url: string, params?: any) {
-  return queryString.stringifyUrl({
-    url: `https://www.okx.com${url}`,
-    query: params
+    },
+    body: method === 'GET' ? null : serializedParams
   })
 }
