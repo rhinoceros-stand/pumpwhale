@@ -1,27 +1,54 @@
 import fetch from 'cross-fetch'
-import cryptoJS from 'crypto-js'
+import { createHmac } from 'crypto'
 import queryString from 'query-string'
 
 const ACCESS_KEY = process.env.OK_ACCESS_KEY
 const SECRET_KEY = process.env.OK_ACCESS_SIGN
 const PASSPHRASE_KEY = process.env.OK_ACCESS_PASSPHRASE
 
+export function serializeParams(
+  params: object | undefined,
+  method: String
+): string {
+  if (!params) {
+    return ''
+  }
+
+  if (method !== 'GET') {
+    return JSON.stringify(params)
+  }
+
+  const queryString = Object.keys(params)
+    .map((key) => {
+      const value = params[key]
+      return `${key}=${value}`
+    })
+    .join('&')
+
+  // Prevent trailing `?` if no params are provided
+  return queryString ? '?' + queryString : queryString
+}
+
+function signMessage(message: string, secret: string): string {
+  return createHmac('sha256', secret).update(message).digest('base64')
+}
+
 export default async function (url: string, params?: any, method = 'GET') {
   const requestUrl = getRequestUrl(url, params)
 
-  const date = new Date() // Get the current time
-  const timestamp = date.toISOString() // Convert the current time to the desired format
+  const tsISO = new Date().toISOString()
+  const serializedParams = serializeParams(params, method)
+  const message = tsISO + method + url + serializedParams
 
   return fetch(requestUrl, {
     method,
     headers: {
       'Content-Type': 'application/json',
       'OK-ACCESS-KEY': ACCESS_KEY,
-      'OK-ACCESS-SIGN': cryptoJS.enc.Base64.stringify(
-        cryptoJS.HmacSHA256(`${timestamp}${method}${url}$`, SECRET_KEY)
-      ),
-      'OK-ACCESS-TIMESTAMP': timestamp,
-      'OK-ACCESS-PASSPHRASE': PASSPHRASE_KEY
+      'OK-ACCESS-SIGN': signMessage(message, SECRET_KEY),
+      'OK-ACCESS-TIMESTAMP': tsISO,
+      'OK-ACCESS-PASSPHRASE': PASSPHRASE_KEY,
+      'OK-ACCESS-PROJECT': 'BOT_API'
     }
   })
 }
