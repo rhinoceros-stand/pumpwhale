@@ -11,13 +11,6 @@ const PASSPHRASE_KEY = process.env.OK_ACCESS_PASSPHRASE
  */
 export const SOLANA_CHAIN_ID = 501
 
-function getRequestUrl(url: string, params?: any) {
-  return queryString.stringifyUrl({
-    url: `https://www.okx.com${url}`,
-    query: params
-  })
-}
-
 export function serializeParams(
   params: object | undefined,
   method: String
@@ -46,7 +39,13 @@ function signMessage(message: string, secret: string): string {
 }
 
 export default async function (url: string, params?: any, method = 'GET') {
-  const requestUrl = getRequestUrl(url, params)
+  let requestUrl = `https://www.okx.com${url}`
+  if (method === 'GET') {
+    requestUrl = queryString.stringifyUrl({
+      url: `https://www.okx.com${url}`,
+      query: params
+    })
+  }
 
   const tsISO = new Date().toISOString()
   const serializedParams = serializeParams(params, method)
