@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb'
+import { logger } from '../utils/logger'
 
 export default class Database {
   private readonly CONNECT_URL = 'mongodb://localhost:27017'
@@ -13,8 +14,12 @@ export default class Database {
    *
    */
   public async getDB() {
-    await this._client.connect()
-    return this._client.db(this._db_name)
+    try {
+      await this._client.connect()
+      return this._client.db(this._db_name)
+    } catch (e) {
+      logger.error(`Error connecting database: ${e}`)
+    }
   }
 
   /**
