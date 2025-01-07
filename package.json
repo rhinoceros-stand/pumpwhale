@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "bonding": "bun ./src/scripts/bonding.ts",
-    "message": "bun --watch ./src/scripts/message.ts",
     "startup": "bun --watch ./src/index.ts",
-    "webservice": "bun --watch ./src/webservice/main.ts"
+    "webservice": "bun --watch ./src/webservice/main.ts",
+    "pm2": "pm2 start npm --name 'bonding' -- run bonding"
   },
   "devDependencies": {
     "@types/bun": "latest",

@@ -73,6 +73,8 @@ export default class Channel {
           return context.send('Hi!')
         }
       })
+
+    this._bot.start()
   }
 
   /**
