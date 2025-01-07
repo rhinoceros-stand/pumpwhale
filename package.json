@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "bonding": "bun ./src/scripts/bonding.ts",
-    "trading": "bun ./src/scripts/trading.ts",
+    "message": "bun ./src/scripts/message.ts",
     "startup": "bun --watch ./src/index.ts",
     "webservice": "bun --watch ./src/webservice/main.ts"
   },
