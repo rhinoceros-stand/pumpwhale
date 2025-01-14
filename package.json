@@ -5,7 +5,8 @@
   "scripts": {
     "bonding": "bun ./src/scripts/bonding.ts",
     "startup": "bun --watch ./src/index.ts",
-    "webservice": "bun --watch ./src/webservice/main.ts",
+    "scheules": "bun --watch ./src/schedules/index.ts",
+    "webservice": "bun --watch ./src/webservice/index.ts",
     "pm2": "pm2 start npm --name 'bonding' -- run bonding"
   },
   "devDependencies": {
@@ -33,6 +34,7 @@
     "axios": "^1.7.9",
     "bs58": "^6.0.0",
     "chalk": "^5.4.1",
+    "croner": "^9.0.0",
     "cross-fetch": "^4.1.0",
     "dotenv": "^16.4.7",
     "gramio": "^0.2.1",

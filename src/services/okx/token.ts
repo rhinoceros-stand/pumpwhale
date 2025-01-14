@@ -14,6 +14,21 @@ export async function getTokenPrice(tokenAddress: string) {
 }
 
 /**
+ * 获取代币价格列表
+ * @param tokenAddress
+ */
+export async function getTokenListPrice(tokenAddress: string[]) {
+  return request('/api/v5/wallet/token/current-price', [
+    ...tokenAddress.map(token => (
+      {
+        chainIndex: SOLANA_CHAIN_ID,
+        tokenAddress: token
+      }
+    ))
+  ], 'POST')
+}
+
+/**
  * 获取代币信息
  * @param tokenAddress
  */
