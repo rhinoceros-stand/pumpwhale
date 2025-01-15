@@ -1,4 +1,4 @@
-import { inRange } from 'lodash'
+import { inRange, toNumber } from 'lodash'
 import { Connection, PublicKey } from '@solana/web3.js'
 import { getMint, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { Metaplex } from '@metaplex-foundation/js'
@@ -72,6 +72,21 @@ export function calcMarketCapitalization(price: number, supply: number, decimals
   return Math.trunc(price * (Number(supply) / decimalWithZero))
 }
 
+/**
+ * 获取价格简写格式
+ * 保留四位有效数字
+ * @param price
+ */
+export function getTokenPriceShortly(price: string) {
+  const priceZeroCount = -Math.floor(Math.log(Number(price)) / Math.log(10) + 1)
+  const startIndex = price.indexOf('.') + priceZeroCount
+  return toNumber(price.substring(0, startIndex + 5))
+}
+
+/**
+ * 获取代币更新优先级
+ * @param mc
+ */
 export function getUpdatePriority(mc: number) {
   let priority = 9
 
