@@ -1,18 +1,20 @@
 import { Cron } from 'croner'
-import { pick, toNumber } from 'lodash'
+import { findLast, pick } from 'lodash'
 import { Connection } from '@solana/web3.js'
-import { getTokenMeatData } from '../services/onchain/metadata'
-import { decodeBondingTransaction } from '../services/onchain/transaction'
 import Database from '../services/database'
+import { calcMarketCapitalization, getTokenMeatData, getTokenPriceShortly, getUpdatePriority } from '../services/onchain/metadata'
+import { decodeBondingTransaction } from '../services/onchain/transaction'
+import { getTokenListPrice, getTokenPrice } from '../services/okx/token'
 import { logger } from '../utils/logger'
-import { getTokenPrice } from '../services/okx/token'
-
 
 const database = new Database()
 const connection = new Connection(process.env.SOLANA_RPC_URL, {
   commitment: 'confirmed'
 })
 
+/**
+ * 获取代币信息
+ */
 const fetchingTokenJob = new Cron('*/10 * * * * *', async () => {
   const db = await database.getDB()
   const collection = db.collection('tokens')
@@ -51,17 +53,12 @@ const fetchingTokenJob = new Cron('*/10 * * * * *', async () => {
       'tokenAddress'
     ])
 
-    const decimalWithZero = 10 ** row.decimals
-    const priceZeroCount = -Math.floor(Math.log(price) / Math.log(10) + 1)
-    const marketCapitalization = Math.trunc(price * (Number(row.supply) / decimalWithZero))
-
-    const startIndex = price.indexOf('.') + priceZeroCount
-    const priceUpdate = price.substring(0, startIndex + 5)
-
+    const mc = calcMarketCapitalization(price, row.supply, row.decimals)
     const updateResult = await collection.updateOne({ signature: row.signature }, {
       $set: {
-        price: toNumber(priceUpdate),
-        marketCap: marketCapitalization,
+        price: getTokenPriceShortly(price),
+        marketCap: mc,
+        // 1 代币价格获取成功；2 代币初始化完成
         status: 1
       }
     })
@@ -72,6 +69,67 @@ const fetchingTokenJob = new Cron('*/10 * * * * *', async () => {
   }
 })
 
+/**
+ * 获取代币价格
+ */
 const fetchingPriceJob = new Cron('0 */1 * * * *', async () => {
+  const db = await database.getDB()
+  const collection = db.collection('tokens')
+  const rows = await collection.find({
+    status: {
+      $eq: 1
+    }
+  }).limit(50).toArray()
+
+  if (rows.length === 0) {
+    return
+  }
+
+  try {
+    const tokens = rows.map(token => token.address)
+    const response = await (
+      await getTokenListPrice(tokens)
+    ).json()
+
+    const {
+      data,
+      msg
+    } = pick(response, [
+      'data',
+      'msg'
+    ])
+
+    if (response.msg !== 'success') {
+      logger.error(`Calling getTokenListPrice error: ${msg}`)
+      return
+    }
+
+    const hasData = Array.isArray(data) && data.length > 0
+    if (!hasData) {
+      return
+    }
+
+    for (const row of rows) {
+      const matched = findLast(data, item => item.tokenAddress === row.address)
+      if (matched) {
+        const mc = calcMarketCapitalization(matched.price, row.supply, row.decimals)
+        const price = getTokenPriceShortly(matched.price)
+        const priority = getUpdatePriority(mc)
+        await collection.updateOne({ signature: row.signature }, {
+          $set: {
+            price,
+            marketCap: mc,
+            status: 2,
+            priority
+          }
+        })
+
+        logger.info(`Update ${row.address} priority: ${priority} price: ${price}`)
+      }
+    }
+
+  } catch (e) {
+
+  }
 })
 
