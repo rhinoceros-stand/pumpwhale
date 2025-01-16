@@ -4,7 +4,7 @@ import { Connection } from '@solana/web3.js'
 import Database from '../services/database'
 import { calcMarketCapitalization, getTokenMeatData, getTokenPriceShortly, getUpdatePriority } from '../services/onchain/metadata'
 import { decodeBondingTransaction } from '../services/onchain/transaction'
-import { getTokenListPrice, getTokenPrice } from '../services/okx/token'
+import { getTokenListPrice } from '../services/okx/token'
 import { logger } from '../utils/logger'
 
 const database = new Database()
@@ -20,7 +20,7 @@ const fetchingTokenJob = new Cron('*/10 * * * * *', async () => {
   const collection = db.collection('tokens')
   const rows = await collection.find({
     status: {
-      $exists: false
+      $eq: 0
     }
   }).limit(1).toArray()
 
@@ -41,31 +41,6 @@ const fetchingTokenJob = new Cron('*/10 * * * * *', async () => {
     })
 
     return
-  }
-
-  const response = await (
-    await getTokenPrice(row.address)
-  ).json()
-
-  if (response.code === '0') {
-    const { price } = pick(response.data[0], [
-      'price',
-      'tokenAddress'
-    ])
-
-    const mc = calcMarketCapitalization(price, row.supply, row.decimals)
-    const updateResult = await collection.updateOne({ signature: row.signature }, {
-      $set: {
-        price: getTokenPriceShortly(price),
-        marketCap: mc,
-        // 1 代币价格获取成功；2 代币初始化完成
-        status: 1
-      }
-    })
-
-    if (updateResult.modifiedCount > 0) {
-      logger.info(`Update token success：${row.symbol} ${row.address}`)
-    }
   }
 })
 
