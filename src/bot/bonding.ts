@@ -70,7 +70,8 @@ export default class BondingBot {
 
       const updateResult = await collection.updateOne({ signature }, {
         $set: {
-          ...tokenMeta
+          ...tokenMeta,
+          status: 0
         }
       })
 
