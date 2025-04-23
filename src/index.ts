@@ -1,29 +1,14 @@
-import chalk from 'chalk'
-import { pick } from 'lodash'
 import * as dotenv from 'dotenv'
-import { Connection } from '@solana/web3.js'
-import Trading from './services/trading'
-import { getWalletProfit } from './api/gmgn'
+import { getSupportChains } from './services/okx/common'
 
 (async () => {
   dotenv.config({
     path: ['.env.local', 'env']
   })
 
-  const connection = new Connection(process.env.SOLANA_RPC_URL, 'confirmed')
-  const trading = new Trading({ connection })
-  const profitList = await getWalletProfit('')
-  const coloredList = profitList.map(v => {
-    const profit = Number(v.profit)
-    return {
-      ...pick(v,[
-        'symbol',
-        'tokenAddress',
-      ]),
-      profit: profit >= 0 ? chalk.green(profit.toFixed(2)) : chalk.red(Math.abs(profit).toFixed(2)),
-      holding: v.balance <= 0 ? chalk.white('SOLD') : chalk.yellowBright('HODL')
-    }
-  })
+  const response = await (
+    await getSupportChains()
+  ).json()
 
-  console.table(coloredList)
+  console.log(response)
 })()

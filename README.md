@@ -21,7 +21,8 @@ You can configure telegram bot to get notifications.
 
 ## 📌 Env file description
 
-- GMGN_COOKIES: Fetch profit from GMGN.AI, visit it via browser cookies.
 - SOLANA_RPC_URL: Connecting to solana blockchain, you can use the default cluster api.
 - TELEGRAM_BOT_SECRET: Send message to your telegram bot, you can receive bounding event and transcation news.
-- WALLET_PRIVATE_KEY: For swaping tokens, don't upload private key to any public repository.
+- OK_ACCESS_KEY
+- OK_ACCESS_SIGN
+- OK_ACCESS_PASSPHRASE
