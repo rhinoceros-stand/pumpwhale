@@ -1,9 +1,11 @@
 import { Connection } from '@solana/web3.js'
+import { get } from 'lodash'
 import { createNanoEvents } from 'nanoevents'
 import Channel from '../services/telegram/channel'
 import Bonding from '../services/onchain/bonding'
 import { decodeVirtualCurveTransaction } from '../services/onchain/transaction'
 import { getTokenMeatData } from '../services/onchain/metadata'
+import { sendNotification } from '../services/pushing'
 import { logger } from '../utils/logger'
 
 export default class BondingBot {
@@ -55,13 +57,17 @@ export default class BondingBot {
 
       if (isMint.isLaunchCoinMint) {
         const mintAddress = await decodeVirtualCurveTransaction(signature, this._conn)
-
         if (!mintAddress) {
           return
         }
 
         const tokenMeta = await getTokenMeatData(mintAddress, this._conn)
         logger.info(`Fetching Liquidity Merged：${tokenMeta.symbol} ${tokenMeta.address}`)
+        if (isMint.isLaunchCoinMint) {
+          const userName = get(tokenMeta.json, 'metadata.tweetCreatorUsername')
+          const image = get(tokenMeta.json, 'image')
+          await sendNotification(`${tokenMeta.symbol} @${userName}`, tokenMeta.address, image)
+        }
       }
     } catch (err) {
       console.log('Insert Error', err)
