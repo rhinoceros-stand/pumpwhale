@@ -31,11 +31,9 @@ export default class Bonding implements OnChainService {
         return
       }
 
-      console.log(logList, signature)
-
       const isMint = {
-        isPumpFunMint: logList && logList.some(log => log.includes('initialize2')),
-        isLaunchCoinMint: logList && logList.some(log => log.includes('MigrateMeteoraDamm'))
+        isPumpFunMint: logList.some(log => log.includes('initialize2')),
+        isLaunchCoinMint: logList.some(log => log.includes('InitializePermissionlessConstantProductPoolWithConfig2'))
       }
 
       const isTokenBounding = some(Object.keys(isMint).map(key => isMint[key]), el => el)
