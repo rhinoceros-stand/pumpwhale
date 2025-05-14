@@ -1,5 +1,5 @@
 import { Connection, PublicKey } from '@solana/web3.js'
-import { findLast, get } from 'lodash'
+import { findIndex } from 'lodash'
 import { logger } from '../../utils/logger'
 
 /**
@@ -25,18 +25,19 @@ export async function decodeVirtualCurveTransaction(signature: string, connectio
       return
     }
 
-    const selectedRecord = findLast(instructions, record => {
-      const program = get(record, 'program')
-      const authorityType = get(record, 'parsed.info.authorityType')
-      return program === 'spl-token' && authorityType === 'mintTokens'
-    })
-
-    if (!selectedRecord) {
+    // fetching initializePermissionlessConstantProductPoolWithConfig2 data, get the address before So11111111111111111111111111111111111111112
+    const poolConfig = instructions[1]
+    const solIndex = findIndex(poolConfig.accounts, r => r.toBase58() === 'So11111111111111111111111111111111111111112')
+    if (solIndex < 0) {
       return
     }
 
-    const mint = get(selectedRecord, 'parsed.info.mint')
-    return new PublicKey(mint)
+    const mintRecord = poolConfig?.accounts[solIndex - 1]
+    if (!mintRecord) {
+      return
+    }
+
+    return new PublicKey(mintRecord.toBase58())
   } catch (e) {
     logger.error('Error decoding bonding transaction:', e)
   }
