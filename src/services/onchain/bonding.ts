@@ -5,7 +5,7 @@ import { logger } from '../../utils/logger'
 import { OnChainService } from './index'
 
 const PUMP_FUN_LIQUIDITY_BONDING_ADDRESS = new PublicKey('39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg')
-const LAUNCH_COIN_MINT_ADDRESS = new PublicKey('5qWya6UjwWnGVhdSBL3hyZ7B45jbk6Byt1hwd7ohEGXE')
+const LAUNCH_COIN_METRORA_CURVE_ADDRESS = new PublicKey('CQdrEsYAxRqkwmpycuTwnMKggr3cr9fqY8Qma4J9TudY')
 
 export default class Bonding implements OnChainService {
   private _conn: Connection
@@ -23,7 +23,7 @@ export default class Bonding implements OnChainService {
       throw new Error('RPC empty connection, initialize it at first.')
     }
 
-    this._listenId = this._conn.onLogs(LAUNCH_COIN_MINT_ADDRESS, (logs) => {
+    this._listenId = this._conn.onLogs(LAUNCH_COIN_METRORA_CURVE_ADDRESS, (logs) => {
       const { signature } = logs
       const logList = logs.logs
 
@@ -31,9 +31,11 @@ export default class Bonding implements OnChainService {
         return
       }
 
+      console.log(logList, signature)
+
       const isMint = {
         isPumpFunMint: logList && logList.some(log => log.includes('initialize2')),
-        isLaunchCoinMint: logList && logList.some(log => log.includes('InitializeVirtualPoolWithSplToken'))
+        isLaunchCoinMint: logList && logList.some(log => log.includes('MigrateMeteoraDamm'))
       }
 
       const isTokenBounding = some(Object.keys(isMint).map(key => isMint[key]), el => el)
