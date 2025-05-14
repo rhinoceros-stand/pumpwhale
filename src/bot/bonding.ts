@@ -1,15 +1,13 @@
 import { Connection } from '@solana/web3.js'
 import { createNanoEvents } from 'nanoevents'
 import Channel from '../services/telegram/channel'
-import Database from '../services/database'
 import Bonding from '../services/onchain/bonding'
-import { decodeBondingTransaction } from '../services/onchain/transaction'
+import { decodeVirtualCurveTransaction } from '../services/onchain/transaction'
 import { getTokenMeatData } from '../services/onchain/metadata'
 import { logger } from '../utils/logger'
 
 export default class BondingBot {
   private readonly _conn: Connection
-  private readonly _database: Database
   private readonly _emitter = createNanoEvents()
   private readonly _channel: Channel
 
@@ -22,7 +20,6 @@ export default class BondingBot {
 
   constructor(rpcUrl: string) {
     this._conn = new Connection(rpcUrl, 'confirmed')
-    this._database = new Database()
     this._channel = new Channel(process.env.TELEGRAM_BOT_SECRET)
   }
 
@@ -48,35 +45,23 @@ export default class BondingBot {
   /**
    *
    * @param signature
+   * @param isMint
    */
-  async handleLiquidBounding(signature: string) {
+  async handleLiquidBounding(signature: string, isMint: any) {
     try {
-      const db = await this._database.getDB()
-      const collection = db.collection('tokens')
-      await collection.insertOne({
-        signature,
-        launchTime: Date.now()
-      })
+      if (isMint.isPumpFunMint) {
 
-      const mintAddress = await decodeBondingTransaction(signature, this._conn)
-      const tokenMeta = await getTokenMeatData(mintAddress, this._conn)
-
-      logger.info(`Fetching Liquidity Merged：${tokenMeta.symbol} ${tokenMeta.address}`)
-
-      // Send to Telegram Channel
-      if (this._channel) {
-        this._channel.sendBondingMessage(tokenMeta)
       }
 
-      const updateResult = await collection.updateOne({ signature }, {
-        $set: {
-          ...tokenMeta,
-          status: 0
-        }
-      })
+      if (isMint.isLaunchCoinMint) {
+        const mintAddress = await decodeVirtualCurveTransaction(signature, this._conn)
 
-      if (updateResult.modifiedCount > 0) {
-        logger.info(`Update token success：${tokenMeta.symbol} ${tokenMeta.address}`)
+        if (!mintAddress) {
+          return
+        }
+
+        const tokenMeta = await getTokenMeatData(mintAddress, this._conn)
+        logger.info(`Fetching Liquidity Merged：${tokenMeta.symbol} ${tokenMeta.address}`)
       }
     } catch (err) {
       console.log('Insert Error', err)

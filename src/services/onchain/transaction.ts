@@ -35,7 +35,8 @@ export async function decodeVirtualCurveTransaction(signature: string, connectio
       return
     }
 
-    return new PublicKey(selectedRecord.mint)
+    const mint = get(selectedRecord, 'parsed.info.mint')
+    return new PublicKey(mint)
   } catch (e) {
     logger.error('Error decoding bonding transaction:', e)
   }
