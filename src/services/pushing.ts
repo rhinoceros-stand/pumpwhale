@@ -5,6 +5,7 @@ export async function sendNotification(title: string, body: string, icon: string
     title,
     body,
     icon,
-    copy: body
+    copy: body,
+    url: `https://gmgn.ai/sol/token/${body}`
   })
 }
