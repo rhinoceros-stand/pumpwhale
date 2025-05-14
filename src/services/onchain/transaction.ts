@@ -1,15 +1,13 @@
 import { Connection, PublicKey } from '@solana/web3.js'
-import { findLast } from 'lodash'
+import { findLast, get } from 'lodash'
 import { logger } from '../../utils/logger'
 
-const RAYDIUM_V4 = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
-
 /**
- * 解析 Bonding 交易信息
+ * Decode virtual curve tx
  * @param signature
  * @param connection
  */
-export async function decodeBondingTransaction(signature: string, connection: Connection) {
+export async function decodeVirtualCurveTransaction(signature: string, connection: Connection) {
   try {
     const tx = await connection.getParsedTransaction(signature, {
       commitment: 'confirmed',
@@ -20,19 +18,25 @@ export async function decodeBondingTransaction(signature: string, connection: Co
       return null
     }
 
-    const tokenBalances = tx.meta?.postTokenBalances
+    const innerInstructions = tx.meta?.innerInstructions
+    const instructions = innerInstructions[0]?.instructions
 
-    if (Array.isArray(tokenBalances)) {
-      const selectedRecord = findLast(tokenBalances, record => {
-        return record.owner === RAYDIUM_V4 && record.mint !== 'So11111111111111111111111111111111111111112'
-      })
-
-      if (!selectedRecord) {
-        return
-      }
-
-      return new PublicKey(selectedRecord.mint)
+    if (!Array.isArray(instructions)) {
+      return
     }
+
+    const selectedRecord = findLast(instructions, record => {
+      const program = get(record, 'program')
+      const authorityType = get(record, 'parsed.info.authorityType')
+      return program === 'spl-token' && authorityType === 'mintTokens'
+    })
+
+    if (!selectedRecord) {
+      return
+    }
+
+    const mint = get(selectedRecord, 'parsed.info.mint')
+    return new PublicKey(mint)
   } catch (e) {
     logger.error('Error decoding bonding transaction:', e)
   }

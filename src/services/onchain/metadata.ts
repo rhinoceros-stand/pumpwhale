@@ -23,6 +23,7 @@ export async function getTokenMeatData(mintAddress: PublicKey, conn: Connection)
       address: token.address.toBase58(),
       supply: mintInfo.supply,
       decimals: token.mint.decimals,
+      json: token.json,
       holders
     }
   } else {
