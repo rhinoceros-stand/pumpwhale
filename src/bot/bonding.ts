@@ -1,7 +1,6 @@
 import { Connection } from '@solana/web3.js'
 import { get } from 'lodash'
 import { createNanoEvents } from 'nanoevents'
-import Channel from '../services/telegram/channel'
 import Bonding from '../services/onchain/bonding'
 import { decodeVirtualCurveTransaction } from '../services/onchain/transaction'
 import { getTokenMeatData } from '../services/onchain/metadata'
@@ -11,7 +10,6 @@ import { logger } from '../utils/logger'
 export default class BondingBot {
   private readonly _conn: Connection
   private readonly _emitter = createNanoEvents()
-  private readonly _channel: Channel
 
   /**
    * Bonding 服务
@@ -22,7 +20,6 @@ export default class BondingBot {
 
   constructor(rpcUrl: string) {
     this._conn = new Connection(rpcUrl, 'confirmed')
-    this._channel = new Channel(process.env.TELEGRAM_BOT_SECRET)
   }
 
   /**
@@ -32,9 +29,6 @@ export default class BondingBot {
     this._bonding = new Bonding()
     this._bonding.init(this._conn, this._emitter)
     this._emitter.on('mint', this.handleLiquidBounding.bind(this))
-
-    // 启动 Telegram Bot
-    this._channel.start()
   }
 
   /**
