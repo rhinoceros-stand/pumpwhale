@@ -60,6 +60,10 @@ export default class BondingBot {
         if (isMint.isLaunchCoinMint) {
           const userName = get(tokenMeta.json, 'metadata.tweetCreatorUsername')
           const image = get(tokenMeta.json, 'image')
+
+          if (!userName) {
+            return
+          }
           await sendNotification(`${tokenMeta.symbol} ${userName ? `@${userName}` : ''}`, tokenMeta.address, image)
         }
       }
