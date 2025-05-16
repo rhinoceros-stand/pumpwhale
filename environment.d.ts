@@ -2,7 +2,6 @@ declare global {
   namespace NodeJS {
     interface ProcessEnv {
       SOLANA_RPC_URL: string
-      TELEGRAM_BOT_SECRET: string
       WALLET_PRIVATE_KEY: string
       OK_ACCESS_KEY: string
       OK_ACCESS_SIGN: string
