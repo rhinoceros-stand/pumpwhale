@@ -5,7 +5,7 @@ import { logger } from '../../utils/logger'
 import { OnChainService } from './index'
 
 const PUMP_FUN_LIQUIDITY_BONDING_ADDRESS = new PublicKey('39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg')
-const BELIEVE_TOKEN_AUTHORITY = new PublicKey('CQdrEsYAxRqkwmpycuTwnMKggr3cr9fqY8Qma4J9TudY')
+const BELIEVE_TOKEN_AUTHORITY = new PublicKey('5qWya6UjwWnGVhdSBL3hyZ7B45jbk6Byt1hwd7ohEGXE')
 
 export default class Bonding implements OnChainService {
   private _conn: Connection
@@ -33,7 +33,7 @@ export default class Bonding implements OnChainService {
 
       const isMint = {
         isPumpFunMint: logList.some(log => log.includes('initialize2')),
-        isLaunchCoinMint: logList.some(log => log.includes('InitializePermissionlessConstantProductPoolWithConfig2'))
+        isLaunchCoinMint: logList.some(log => log.includes('Program log: Instruction: InitializeVirtualPoolWithSplToken'))
       }
 
       const isTokenBounding = some(Object.keys(isMint).map(key => isMint[key]), el => el)

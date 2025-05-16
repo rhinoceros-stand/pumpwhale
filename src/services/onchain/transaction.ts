@@ -1,7 +1,6 @@
-import { Connection, PublicKey } from '@solana/web3.js'
-import { get } from 'lodash'
+import { Connection } from '@solana/web3.js'
+import { findLast, get } from 'lodash'
 import { logger } from '../../utils/logger'
-import { getPoolInfo } from './meteora'
 
 /**
  * Decode virtual curve tx
@@ -19,30 +18,24 @@ export async function decodeVirtualCurveTransaction(signature: string, connectio
       return null
     }
 
-    const innerInstructions = tx.meta?.innerInstructions
-    if (!Array.isArray(innerInstructions)) {
+    const firstInstruction = tx.meta?.innerInstructions[0]
+    const instructions = firstInstruction?.instructions
+    if (!Array.isArray(instructions)) {
       return
     }
 
+    const metroraProgram = findLast(instructions, record => {
+      const programId = get(record, 'programId').toBase58()
+      const accounts = get(record, 'accounts')
+      return programId === 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' && Array.isArray(accounts)
+    })
 
-    // #3.1 - Meteora Pools Program: lock
-    // #1 - Pool
-
-    const instructions = get(innerInstructions[2], 'instructions')
-    const accounts = get(instructions[0], 'accounts')
-
-    // Pool Address
-    const poolInfo = accounts[0]
-    const response = await getPoolInfo(poolInfo.toBase58())
-
-    // pool_token_mints contains two spl address, So11111111111111111111111111111111111111112
-    const { data } = response
-    if (!Array.isArray(data)) {
+    if (!metroraProgram) {
       return
     }
 
-    const poolTokenPair = data[0]?.pool_token_mints
-    return new PublicKey(poolTokenPair[0])
+    const accounts = get(metroraProgram, 'accounts', [])
+    return accounts[1]
   } catch (e) {
     logger.error('Error decoding bonding transaction:', e)
   }
