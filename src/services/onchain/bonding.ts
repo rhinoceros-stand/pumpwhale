@@ -1,11 +1,11 @@
-import { Connection, Logs, PublicKey } from '@solana/web3.js'
+import { Connection, PublicKey } from '@solana/web3.js'
 import { some } from 'lodash'
 import { Emitter } from 'nanoevents'
 import { logger } from '../../utils/logger'
 import { OnChainService } from './index'
 
 const PUMP_FUN_LIQUIDITY_BONDING_ADDRESS = new PublicKey('39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg')
-const LAUNCH_COIN_METRORA_CURVE_ADDRESS = new PublicKey('CQdrEsYAxRqkwmpycuTwnMKggr3cr9fqY8Qma4J9TudY')
+const BELIEVE_TOKEN_AUTHORITY = new PublicKey('CQdrEsYAxRqkwmpycuTwnMKggr3cr9fqY8Qma4J9TudY')
 
 export default class Bonding implements OnChainService {
   private _conn: Connection
@@ -23,7 +23,7 @@ export default class Bonding implements OnChainService {
       throw new Error('RPC empty connection, initialize it at first.')
     }
 
-    this._listenId = this._conn.onLogs(LAUNCH_COIN_METRORA_CURVE_ADDRESS, (logs) => {
+    this._listenId = this._conn.onLogs(BELIEVE_TOKEN_AUTHORITY, (logs) => {
       const { signature } = logs
       const logList = logs.logs
 

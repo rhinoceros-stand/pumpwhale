@@ -1,6 +1,7 @@
 import { Connection, PublicKey } from '@solana/web3.js'
-import { findIndex } from 'lodash'
+import { get } from 'lodash'
 import { logger } from '../../utils/logger'
+import { getPoolInfo } from './meteora'
 
 /**
  * Decode virtual curve tx
@@ -19,25 +20,29 @@ export async function decodeVirtualCurveTransaction(signature: string, connectio
     }
 
     const innerInstructions = tx.meta?.innerInstructions
-    const instructions = innerInstructions[0]?.instructions
-
-    if (!Array.isArray(instructions)) {
+    if (!Array.isArray(innerInstructions)) {
       return
     }
 
-    // fetching initializePermissionlessConstantProductPoolWithConfig2 data, get the address before So11111111111111111111111111111111111111112
-    const poolConfig = instructions[1]
-    const solIndex = findIndex(poolConfig.accounts, r => r.toBase58() === 'So11111111111111111111111111111111111111112')
-    if (solIndex < 0) {
+
+    // #3.1 - Meteora Pools Program: lock
+    // #1 - Pool
+
+    const instructions = get(innerInstructions[2], 'instructions')
+    const accounts = get(instructions[0], 'accounts')
+
+    // Pool Address
+    const poolInfo = accounts[0]
+    const response = await getPoolInfo(poolInfo.toBase58())
+
+    // pool_token_mints contains two spl address, So11111111111111111111111111111111111111112
+    const { data } = response
+    if (!Array.isArray(data)) {
       return
     }
 
-    const mintRecord = poolConfig?.accounts[solIndex - 1]
-    if (!mintRecord) {
-      return
-    }
-
-    return new PublicKey(mintRecord.toBase58())
+    const poolTokenPair = data[0]?.pool_token_mints
+    return new PublicKey(poolTokenPair[0])
   } catch (e) {
     logger.error('Error decoding bonding transaction:', e)
   }
